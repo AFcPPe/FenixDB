@@ -231,6 +231,8 @@ class MyMainForm(QMainWindow, Ui_MainWindow):
         super(MyMainForm, self).__init__(parent)
         self.setupUi(self)
         self.OpenDB.triggered.connect(self.connectdb)
+        self.SaveRunway.clicked.connect(self.saverunway)
+        self.SaveILS.clicked.connect(self.saveils)
 
     def connectdb(self):
 
@@ -260,6 +262,14 @@ class MyMainForm(QMainWindow, Ui_MainWindow):
             self.WPSearchButton.clicked.connect(self.searchwp)
             self.WPSave.clicked.connect(self.savewp)
             self.TMAAPSearchButton.clicked.connect(self.searchtma)
+            self.cur.execute("SELECT SurfaceType FROM SurfaceTypes")
+            data = self.cur.fetchall()
+            self.RSurface.clear()
+            for per in data:
+                self.RSurface.addItem(per[0].__str__())
+            self.ILSCategory.addItem('I')
+            self.ILSCategory.addItem('II')
+            self.ILSCategory.addItem('III')
 
     def searchtma(self):
         self.cur.execute("SELECT * FROM Terminals WHERE ICAO = \'"+self.TMAAPSearch.text()+"\'")
@@ -441,11 +451,7 @@ class MyMainForm(QMainWindow, Ui_MainWindow):
         # print(self.AirportSelect.selectedIndexes()[0].data())
 
     def selectrunways(self):
-        self.cur.execute("SELECT SurfaceType FROM SurfaceTypes")
-        data = self.cur.fetchall()
-        self.RSurface.clear()
-        for per in data:
-            self.RSurface.addItem(per[0].__str__())
+
         self.cur.execute("SELECT * FROM Runways WHERE AirportID =\'" + self.AirportID.text() + "\' AND Ident =\'"+self.RunwaySelect.selectedIndexes()[0].data()+"\'" )
         data = self.cur.fetchall()
         self.RunwayID.setText(data[0][0].__str__())
@@ -500,8 +506,6 @@ class MyMainForm(QMainWindow, Ui_MainWindow):
             else:
                 self.ILSDME.setChecked(False)
             self.ILSHeight.setText(data[0][11].__str__())
-        self.SaveRunway.clicked.connect(self.saverunway)
-        self.SaveILS.clicked.connect(self.saveils)
 
     def saveairport(self):
         global sheetAirports
@@ -598,7 +602,9 @@ class MyMainForm(QMainWindow, Ui_MainWindow):
                 print('发现重合,在第' + i.__str__() + '行')
                 sheetILSes.cell(i, 1).value = self.ILSID.text()
                 sheetILSes.cell(i, 2).value = self.RunwayID.text()
-                sheetILSes.cell(i, 3).value = self.ILSFreq.text()
+                iff = self.ILSFreq.text()
+                print(int(int(float(iff) * 10000).__str__(), 16).__str__())
+                sheetILSes.cell(i, 3).value = int(int(float(iff) * 10000).__str__(), 16).__str__()
                 sheetILSes.cell(i, 4).value = self.ILSAngle.text()
                 sheetILSes.cell(i, 5).value = self.lat2cor(self.ILSLat.text())
                 sheetILSes.cell(i, 5).number_format = '-#.######'
@@ -619,7 +625,9 @@ class MyMainForm(QMainWindow, Ui_MainWindow):
                 print('没有重合,在第' + i.__str__() + '行')
                 sheetILSes.cell(i, 1).value = self.ILSID.text()
                 sheetILSes.cell(i, 2).value = self.RunwayID.text()
-                sheetILSes.cell(i, 3).value = self.ILSFreq.text()
+                iff = self.ILSFreq.text()
+                print(int(int(float(iff) * 10000).__str__(), 16).__str__())
+                sheetILSes.cell(i, 3).value = int(int(float(iff) * 10000).__str__(), 16).__str__()
                 sheetILSes.cell(i, 4).value = self.ILSAngle.text()
                 sheetILSes.cell(i, 5).value = self.lat2cor(self.ILSLat.text())
                 sheetILSes.cell(i, 5).number_format = '-#.######'
@@ -639,6 +647,9 @@ class MyMainForm(QMainWindow, Ui_MainWindow):
 
 
 if __name__ == "__main__":
+    #print((int(hex(17854464)[2:8])/1000.0).__str__())
+
+    #print(int(int(110.7*10000).__str__(),16))
     # con = sqlite3.connect('C:\\ProgramData\\Fenix\\Navdata\\nd.db3')
     # cur = con.cursor()
     # cur.execute("SELECT ID,ICAO FROM Airports")
